@@ -16,6 +16,7 @@
 
 Demo Link: "https://bhargavi2048-boop.github.io/Sportzone-fitness-platform/"
 
+Demo Video: "https://drive.google.com/file/d/1KvplZ5CCgFNmMYM73cpptJAUf3T_47BY/view?usp=sharing"
 </div>
 
 ---
