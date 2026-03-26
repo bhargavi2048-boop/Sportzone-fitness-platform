@@ -2,11 +2,12 @@
 
 A fully clickable mobile app prototype for a sports & fitness discovery platform.
 
+Demo Link: " https://bhargavi2048-boop.github.io/Sportzone-fitness-platform/ "
+
 ## How to Run
 
-1. Extract the ZIP file
-2. Open `index.html` in any browser (Chrome / Firefox / Edge / Safari)
-3. No server needed — works offline completely
+1. Open `index.html` in any browser (Chrome / Firefox / Edge / Safari)
+2. No server needed — works offline completely
 
 ## Project Structure
 
