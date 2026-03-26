@@ -14,12 +14,7 @@
 
 **A fully interactive mobile sports app prototype — zero frameworks, zero dependencies, one file.**
 
-![Version](https://img.shields.io/badge/version-3.0-1a6ef8?style=flat-square)
-![Build](https://img.shields.io/badge/build-passing-16a34a?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-7c3aed?style=flat-square)
-![Screens](https://img.shields.io/badge/screens-21-f97316?style=flat-square)
-![Size](https://img.shields.io/badge/bundle-20KB-dc2626?style=flat-square)
-![Responsive](https://img.shields.io/badge/responsive-mobile--first-0891b2?style=flat-square)
+Demo Link: "https://bhargavi2048-boop.github.io/Sportzone-fitness-platform/"
 
 </div>
 
@@ -300,6 +295,6 @@ These are the natural next integration points for a real build.
 *Every pixel deliberate. Every interaction considered.*  
 *No shortcuts. No frameworks. Just craft.*
 
-**SportZone © 2025 — Akash**
+**SportZone © 2026 — Bhargavi N**
 
 </div>
