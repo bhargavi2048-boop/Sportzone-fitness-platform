@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>SportZone</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --p:#1a6ef8;--pd:#1255c5;--pl:#e8f0fe;
+  --g:#16a34a;--gl:#dcfce7;
+  --a:#d97706;--al:#fef3c7;
+  --r:#dc2626;--rl:#fee2e2;
+  --bg:#f1f5fb;--card:#fff;--border:#e2e8f0;
+  --t:#0f172a;--tm:#64748b;--tl:#94a3b8;
+  --sh:0 2px 12px rgba(0,0,0,.08);
+  --rad:14px;
+}
+html,body{height:100%;background:#0a1628;font-family:'DM Sans',sans-serif;overflow:hidden}
+
+/* ── WRAPPER ── */
+.app{
+  width:100%;max-width:430px;height:100%;height:100dvh;
+  margin:0 auto;background:var(--bg);
+  position:relative;overflow:hidden;
+  box-shadow:0 0 60px rgba(0,0,0,.5);
+}
+@media(min-width:500px){
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .app{height:90vh;max-height:900px;border-radius:36px}
+}
+
+/* ── SCREENS ── */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg);overflow:hidden}
+.screen.active{display:flex;animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* scrollable body area */
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.body::-webkit-scrollbar{display:none}
+
+/* ── STATUS BAR ── */
+.sbar{
+  height:44px;background:transparent;display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:10;
+  font-size:12px;font-weight:600;color:var(--t);position:relative;
+}
+.sbar.dark{color:#fff}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:110px;height:28px;background:#000;border-radius:0 0 16px 16px}
+
+/* ── TOP BAR ── */
+.topbar{background:var(--card);padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar h1{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t)}
+.topbar p{font-size:12px;color:var(--tm);margin-top:1px}
+
+/* ── BACK BTN ── */
+.back{width:34px;height:34px;border-radius:10px;background:var(--bg);
+  border:1.5px solid var(--border);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;flex-shrink:0}
+.back svg{width:17px;height:17px;fill:none;stroke:var(--t);stroke-width:2.2;stroke-linecap:round}
+
+/* ── AVATAR ── */
+.av{width:36px;height:36px;border-radius:50%;background:var(--p);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* ── SEARCH BAR ── */
+.search{background:var(--bg);border:1.5px solid var(--border);border-radius:12px;
+  padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:.15s}
+.search:hover{border-color:var(--p)}
+.search svg{width:15px;height:15px;fill:none;stroke:var(--tm);stroke-width:2;flex-shrink:0}
+.search span{font-size:13px;color:var(--tm)}
+
+/* ── CHIPS / FILTERS ── */
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:7px 14px;border-radius:20px;white-space:nowrap;font-size:12px;font-weight:600;
+  cursor:pointer;background:var(--card);border:1.5px solid var(--border);color:var(--tm);
+  transition:.15s;flex-shrink:0}
+.chip.on,.chip:active{background:var(--p);border-color:var(--p);color:#fff}
+
+/* ── SPORT CHIPS (filter content) ── */
+.sport-chip{padding:8px 14px;border-radius:20px;font-size:13px;font-weight:500;
+  cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--tm);
+  transition:.15s;display:inline-block;margin:4px}
+.sport-chip.sel{background:var(--pl);border-color:var(--p);color:var(--p)}
+
+/* ── BADGES ── */
+.b{padding:3px 9px;border-radius:16px;font-size:11px;font-weight:600;flex-shrink:0}
+.bg{background:var(--gl);color:var(--g)}
+.ba{background:var(--al);color:var(--a)}
+.bb{background:var(--pl);color:var(--p)}
+.br{background:var(--rl);color:var(--r)}
+
+/* ── SECTION LABEL ── */
+.slabel{font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;
+  letter-spacing:1px;padding:14px 16px 6px}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:14px;border-radius:14px;background:var(--p);color:#fff;
+  border:none;font-size:15px;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:.15s;
+  box-shadow:0 4px 14px rgba(26,110,248,.3)}
+.btn:active{transform:scale(.98);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--p);border:1.5px solid var(--p);box-shadow:none}
+.btn-ghost:active{background:var(--pl)}
+.btn-red{background:var(--r);box-shadow:0 4px 14px rgba(220,38,38,.25)}
+.btn-out{background:transparent;color:var(--tm);border:1.5px solid var(--border);box-shadow:none}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:absolute;bottom:0;left:0;right:0;height:62px;
+  background:var(--card);border-top:1px solid var(--border);
+  display:flex;align-items:center;z-index:50;padding:0 4px 4px}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;padding:6px 4px;border:none;background:transparent;cursor:pointer;
+  color:var(--tm);transition:.15s;border-radius:10px;font-family:'DM Sans',sans-serif}
+.nb:hover,.nb.on{color:var(--p);background:var(--pl)}
+.nb svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.nb span{font-size:10px;font-weight:600}
+
+/* ── HERO BANNER ── */
+.hero{margin:10px 12px;background:linear-gradient(135deg,#1a6ef8,#0a3888);
+  border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer}
+.hero::before{content:'🏏';position:absolute;right:10px;top:50%;
+  transform:translateY(-50%);font-size:60px;opacity:.12}
+.hero h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px}
+.hero p{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px}
+.hero-btn{background:rgba(255,255,255,.2);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 16px;border-radius:10px;
+  font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.15s}
+.hero-btn:active{background:rgba(255,255,255,.35)}
+
+/* ── VENUE ROW ── */
+.vrow{display:flex;align-items:center;gap:11px;background:var(--card);
+  padding:13px 15px;border-bottom:1px solid var(--border);cursor:pointer;transition:.12s}
+.vrow:active{background:#f8fafc}
+.vicon{width:42px;height:42px;border-radius:12px;background:#e0e7ff;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.vname{font-size:14px;font-weight:600;color:var(--t);margin-bottom:2px}
+.vmeta{font-size:12px;color:var(--tm)}
+
+/* ── TRAINER CARD ── */
+.tcards{display:flex;gap:9px;padding:0 12px 14px;overflow-x:auto}
+.tcards::-webkit-scrollbar{display:none}
+.tcard{background:var(--card);border-radius:14px;padding:12px;min-width:110px;flex-shrink:0;
+  border:1px solid var(--border);text-align:center;cursor:pointer;transition:.15s}
+.tcard:active{transform:translateY(-1px);box-shadow:var(--sh)}
+
+/* ── EVENT CARD ── */
+.ecard{background:var(--card);border-radius:14px;padding:14px;margin:0 12px 10px;
+  border:1px solid var(--border);cursor:pointer;transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.ecard:active{transform:translateY(-1px);box-shadow:var(--sh)}
+.pbar{height:4px;background:var(--bg);border-radius:2px;margin-top:8px;overflow:hidden}
+.pfill{height:100%;background:var(--p);border-radius:2px}
+
+/* ── PAYMENT METHOD ── */
+.pmethod{display:flex;align-items:center;gap:11px;background:var(--card);
+  padding:13px 14px;border-radius:13px;margin-bottom:9px;border:2px solid var(--border);cursor:pointer;transition:.15s}
+.pmethod.on{border-color:var(--p);background:#f0f6ff}
+.radio{width:17px;height:17px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:.15s}
+.radio.on{border-color:var(--p);background:radial-gradient(circle at center,var(--p) 40%,transparent 40%)}
+
+/* ── SLOT CHIP ── */
+.sc{padding:8px 13px;border-radius:10px;background:var(--bg);border:1.5px solid var(--border);
+  font-size:13px;color:var(--tm);cursor:pointer;transition:.15s;font-family:'DM Sans',sans-serif}
+.sc:hover:not(.taken){border-color:var(--p);color:var(--p)}
+.sc.sel{background:var(--pl);border-color:var(--p);color:var(--p);font-weight:600}
+.sc.taken{color:var(--tl);text-decoration:line-through;cursor:not-allowed;background:#f8fafc}
+
+/* ── DATE PILL ── */
+.dpill{display:flex;flex-direction:column;align-items:center;padding:10px 12px;
+  border-radius:13px;min-width:50px;background:var(--card);border:1.5px solid var(--border);
+  cursor:pointer;transition:.15s;flex-shrink:0}
+.dpill.on{background:var(--p);border-color:var(--p)}
+.dpill .dd{font-size:10px;font-weight:600;color:var(--tm)}
+.dpill.on .dd{color:rgba(255,255,255,.7)}
+.dpill .dn{font-size:17px;font-weight:700;color:var(--t);margin-top:2px}
+.dpill.on .dn{color:#fff}
+
+/* ── TOGGLE ── */
+.tog{width:48px;height:26px;border-radius:13px;background:var(--border);
+  position:relative;cursor:pointer;transition:.25s;flex-shrink:0}
+.tog.on{background:var(--p)}
+.tog .th{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog.on .th{transform:translateX(22px)}
+
+/* ── CHAT BUBBLES ── */
+.bin,.bout{display:flex;align-items:flex-end;gap:6px;animation:fadeUp .2s}
+.bout{flex-direction:row-reverse}
+.btext{padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.45;max-width:230px}
+.bin .btext{background:var(--card);border:1px solid var(--border);color:var(--t);border-bottom-left-radius:3px}
+.bout .btext{background:var(--p);color:#fff;border-bottom-right-radius:3px}
+.btime{font-size:10px;color:var(--tl);margin-top:2px;padding:0 3px}
+.bout .btime{text-align:right}
+.bbody{display:flex;flex-direction:column}
+.qr{padding:6px 12px;border-radius:14px;background:var(--pl);border:1.5px solid #93c5fd;
+  color:var(--p);font-size:12px;font-weight:500;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:.15s}
+.qr:active{background:var(--p);color:#fff}
+
+/* ── VENUE HEADER ── */
+.vhdr{height:180px;background:linear-gradient(135deg,#e0e7ff,#dbeafe);
+  display:flex;align-items:center;justify-content:center;font-size:70px;
+  position:relative;flex-shrink:0}
+.backover{position:absolute;top:50px;left:14px;width:34px;height:34px;border-radius:10px;
+  background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.backover svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round}
+.heart-btn{position:absolute;top:50px;right:14px;width:34px;height:34px;border-radius:10px;
+  background:rgba(0,0,0,.3);border:none;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+
+/* ── DASH HEADER ── */
+.dhdr{padding:50px 16px 18px;flex-shrink:0}
+.dstats{display:flex;gap:8px;margin-top:14px}
+.dstat{flex:1;background:rgba(255,255,255,.1);border-radius:12px;padding:11px;text-align:center;border:1px solid rgba(255,255,255,.15);cursor:pointer}
+.dnum{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:#fff}
+.dlabel{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px}
+
+/* ── TIMELINE ── */
+.trow{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.ttime{font-size:10px;color:var(--tm);width:46px;text-align:right;flex-shrink:0}
+.tblock{flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid transparent}
+.tblock.cf{background:var(--gl);border-color:#bbf7d0}
+.tblock.pe{background:var(--al);border-color:#fde68a}
+.tblock.av{background:var(--bg);border-color:var(--border)}
+.tname{font-size:12px;font-weight:600;color:var(--t)}
+.tmeta{font-size:11px;color:var(--tm);margin-top:1px}
+
+/* ── SETTINGS ROW ── */
+.srow{display:flex;align-items:center;justify-content:space-between;
+  padding:13px 15px;cursor:pointer;transition:.12s;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.srow:active{background:var(--bg)}
+.srl{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--t)}
+
+/* ── NOTIF ITEM ── */
+.ni{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.ni:last-child{border-bottom:none}
+.ni:active{background:var(--bg)}
+.nicon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;
+  justify-content:center;font-size:17px;flex-shrink:0}
+
+/* ── SUCCESS ICON ── */
+.sicon{width:82px;height:82px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;margin-bottom:20px;animation:pop .4s cubic-bezier(.17,.67,.3,1.3)}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ── FILTER SHEET ── */
+.foverlay{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:200;
+  display:none;align-items:flex-end}
+.foverlay.open{display:flex;animation:fadeUp .2s}
+.fsheet{width:100%;background:var(--card);border-radius:22px 22px 0 0;
+  max-height:88%;overflow-y:auto;padding-bottom:20px}
+.fsheet::-webkit-scrollbar{display:none}
+.shandle{display:flex;justify-content:center;padding:10px 0 4px}
+.shandle div{width:34px;height:4px;border-radius:2px;background:var(--border)}
+
+/* ── WALLET ── */
+.wbal{background:linear-gradient(135deg,#1a6ef8,#0a3888);border-radius:18px;
+  padding:22px;margin:14px 12px;text-align:center;position:relative;overflow:hidden}
+.wbal::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;
+  background:rgba(255,255,255,.06);top:-60px;right:-50px}
+
+/* ── CLIENT ROW ── */
+.crow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.cprog{height:3px;background:var(--bg);border-radius:2px;margin-top:4px;overflow:hidden}
+.cpfill{height:100%;background:var(--p);border-radius:2px}
+
+/* ── PULSE ANIM ── */
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,110,248,.45)}50%{box-shadow:0 0 0 14px rgba(26,110,248,0)}}
+.pulse{animation:pulse 2.5s infinite}
+
+/* ── TOAST ── */
+.toast{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);
+  background:#0f172a;color:#fff;padding:9px 16px;border-radius:10px;
+  font-size:13px;font-weight:500;z-index:999;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);animation:fadeUp .2s ease;pointer-events:none}
+
+/* ── REVIEW STARS ── */
+.star{font-size:36px;cursor:pointer;color:var(--a);transition:.1s}
+.star:active{transform:scale(1.2)}
+
+/* ── ROLE BANNER ── */
+.rbanner{display:flex;align-items:center;gap:11px;padding:13px;border-radius:14px;
+  cursor:pointer;transition:.15s;margin:6px 12px 0}
+.rbanner:active{opacity:.85}
+.ricon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:2px;background:var(--p);transition:width .4s}
+
+/* ── INLINE CONTENT ── */
+.card-box{background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden;margin:0 12px}
+.price-box{flex:1;background:var(--bg);border-radius:11px;padding:11px;border:1px solid var(--border)}
+.stat-box{flex:1;background:rgba(255,255,255,.1);border-radius:12px;padding:11px;text-align:center;border:1px solid rgba(255,255,255,.15)}
+
+/* Filtered content blocks */
+.sport-content{display:none}
+.sport-content.visible{display:block}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- ═══════════════ S1 · SPLASH ═══════════════ -->
+<div class="screen active" id="s1" style="background:linear-gradient(160deg,#0a1628,#1a1a3e,#0d2b4e);align-items:center;justify-content:center">
+  <div class="sbar dark" style="position:absolute;top:0;left:0;right:0"><div class="notch"></div><span id="clk" style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <div style="position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(26,110,248,.18),transparent);top:-80px;left:-70px"></div>
+    <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,.12),transparent);bottom:-50px;right:-50px"></div>
+  </div>
+  <div style="width:76px;height:76px;background:var(--p);border-radius:22px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;z-index:1" class="pulse">
+    <svg width="42" height="42" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="18" stroke="white" stroke-width="2.5"/><path d="M14 22l6 6 10-12" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#fff;letter-spacing:2px;z-index:1">SportZone</div>
+  <div style="font-size:13px;color:#6b8ccc;margin-top:5px;margin-bottom:8px;z-index:1">Discover · Play · Connect</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:44px;z-index:1">Designed by Akash · v3.0</div>
+  <button onclick="go('s2')" style="background:var(--p);color:#fff;border:none;border-radius:14px;padding:14px 48px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;z-index:1;box-shadow:0 8px 24px rgba(26,110,248,.45)">Get Started 🏃</button>
+  <button onclick="go('s3')" style="background:transparent;color:rgba(255,255,255,.45);border:none;font-size:13px;cursor:pointer;margin-top:12px;z-index:1;font-family:'DM Sans',sans-serif">Sign in to existing account</button>
+</div>
+
+<!-- ═══════════════ S2 · ONBOARDING ═══════════════ -->
+<div class="screen" id="s2" style="padding-top:44px;background:var(--card)">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span id="clk2" style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div style="padding:20px 16px 10px">
+    <div style="font-size:10px;color:var(--p);font-weight:700;letter-spacing:1px;margin-bottom:5px">STEP 1 OF 2</div>
+    <div style="font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--t)">Pick your sports</div>
+    <div style="font-size:13px;color:var(--tm);margin-top:2px">We'll personalise your feed</div>
+  </div>
+  <div class="body" style="padding:4px 8px">
+    <div style="display:flex;flex-wrap:wrap;padding:4px">
+      <span class="sport-chip sel" onclick="this.classList.toggle('sel')">🏸 Badminton</span>
+      <span class="sport-chip sel" onclick="this.classList.toggle('sel')">🏏 Cricket</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">⚽ Football</span>
+      <span class="sport-chip sel" onclick="this.classList.toggle('sel')">🏊 Swimming</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🏑 Hockey</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🎾 Tennis</span>
+      <span class="sport-chip sel" onclick="this.classList.toggle('sel')">🏀 Basketball</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🧘 Yoga</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">💪 Gym</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🚴 Cycling</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🏐 Volleyball</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🏓 Table Tennis</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🥊 Boxing</span>
+      <span class="sport-chip"    onclick="this.classList.toggle('sel')">🤸 Gymnastics</span>
+    </div>
+    <div style="padding:10px 8px 4px">
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Your city</div>
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;font-size:14px;color:var(--t);display:flex;align-items:center;justify-content:space-between">
+        <span>📍 Bangalore</span>
+        <span style="font-size:12px;color:var(--p);font-weight:600;cursor:pointer" onclick="toast('City selection coming soon')">Change</span>
+      </div>
+    </div>
+  </div>
+  <div style="padding:10px 14px 20px;background:var(--card);border-top:1px solid var(--border)">
+    <button class="btn" onclick="go('s3')">Continue →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S3 · HOME FEED ═══════════════ -->
+<div class="screen" id="s3" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span id="clk3" style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <!-- Header -->
+  <div style="background:var(--card);padding:12px 15px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+      <div>
+        <div style="font-size:11px;color:var(--tm)">Good morning,</div>
+        <div style="font-family:'Syne',sans-serif;font-size:19px;font-weight:800;color:var(--t)">Akash 👋</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="go('s19')" style="width:36px;height:36px;border-radius:11px;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--tm)" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--r);border-radius:50%;border:1.5px solid #fff"></div>
+        </button>
+        <div class="av" style="width:38px;height:38px;font-size:12px;cursor:pointer;background:linear-gradient(135deg,#1a6ef8,#7c3aed)" onclick="go('s12')">AK</div>
+      </div>
+    </div>
+    <div class="search" onclick="go('s4')">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span>Search sports, venues, events...</span>
+    </div>
+  </div>
+
+  <!-- Sport Filter Chips — THESE NOW FILTER CONTENT -->
+  <div style="background:var(--card);padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div class="chips" id="homeChips">
+      <span class="chip on"  onclick="filterHome(this,'all')">All</span>
+      <span class="chip"     onclick="filterHome(this,'badminton')">🏸 Badminton</span>
+      <span class="chip"     onclick="filterHome(this,'cricket')">🏏 Cricket</span>
+      <span class="chip"     onclick="filterHome(this,'football')">⚽ Football</span>
+      <span class="chip"     onclick="filterHome(this,'swimming')">🏊 Swimming</span>
+      <span class="chip"     onclick="filterHome(this,'gym')">💪 Gym</span>
+      <span class="chip"     onclick="filterHome(this,'tennis')">🎾 Tennis</span>
+    </div>
+  </div>
+
+  <div class="body" id="homeBody">
+
+    <!-- HERO (shown for all / cricket) -->
+    <div class="sport-content visible" data-cat="all cricket">
+      <div class="hero" onclick="go('s10')">
+        <h3>Weekend Cricket Tournament</h3>
+        <p>Mar 23 · Chinnaswamy Ground · Free entry · 8 spots left</p>
+        <button class="hero-btn">Join Now →</button>
+      </div>
+    </div>
+
+    <!-- BADMINTON CONTENT -->
+    <div class="sport-content" data-cat="badminton">
+      <div style="margin:10px 12px;background:linear-gradient(135deg,#312e81,#1e1b4b);border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer" onclick="go('s10')">
+        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.12">🏸</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px">Badminton Open League</h3>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">Mar 25 · Koramangala Hub · ₹200 entry</p>
+        <button class="hero-btn">Register Now →</button>
+      </div>
+    </div>
+
+    <!-- FOOTBALL CONTENT -->
+    <div class="sport-content" data-cat="football">
+      <div style="margin:10px 12px;background:linear-gradient(135deg,#065f46,#064e3b);border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer" onclick="go('s10')">
+        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.12">⚽</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px">5-a-side Football</h3>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">Mar 25 · HSR Turf · 6 spots left · ₹100</p>
+        <button class="hero-btn">Join Match →</button>
+      </div>
+    </div>
+
+    <!-- SWIMMING CONTENT -->
+    <div class="sport-content" data-cat="swimming">
+      <div style="margin:10px 12px;background:linear-gradient(135deg,#0369a1,#0c4a6e);border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer" onclick="go('s5')">
+        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.12">🏊</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px">Swimming Relay Race</h3>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">Mar 28 · Indiranagar Pool · ₹200 entry</p>
+        <button class="hero-btn">Book Now →</button>
+      </div>
+    </div>
+
+    <!-- GYM CONTENT -->
+    <div class="sport-content" data-cat="gym">
+      <div style="margin:10px 12px;background:linear-gradient(135deg,#7c2d12,#431407);border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer" onclick="go('s5')">
+        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.12">💪</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px">Iron Fit Gym · Day Pass</h3>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">0.5 km away · ₹250/day · AC facility</p>
+        <button class="hero-btn">Book Pass →</button>
+      </div>
+    </div>
+
+    <!-- TENNIS CONTENT -->
+    <div class="sport-content" data-cat="tennis">
+      <div style="margin:10px 12px;background:linear-gradient(135deg,#713f12,#451a03);border-radius:18px;padding:18px;position:relative;overflow:hidden;cursor:pointer" onclick="go('s5')">
+        <div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.12">🎾</div>
+        <h3 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:3px">Mixed Doubles Tennis</h3>
+        <p style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px">Mar 30 · Whitefield Academy · ₹250</p>
+        <button class="hero-btn">Join Now →</button>
+      </div>
+    </div>
+
+    <!-- Quick stats -->
+    <div style="display:flex;gap:8px;padding:10px 12px 4px">
+      <div onclick="go('s6')" style="flex:1;background:var(--card);border-radius:13px;padding:11px;border:1px solid var(--border);text-align:center;cursor:pointer">
+        <div style="font-size:20px;font-weight:800;color:var(--p);font-family:'Syne',sans-serif">3</div>
+        <div style="font-size:10px;color:var(--tm);margin-top:1px">Upcoming</div>
+      </div>
+      <div onclick="go('s20')" style="flex:1;background:var(--card);border-radius:13px;padding:11px;border:1px solid var(--border);text-align:center;cursor:pointer">
+        <div style="font-size:20px;font-weight:800;color:var(--g);font-family:'Syne',sans-serif">₹600</div>
+        <div style="font-size:10px;color:var(--tm);margin-top:1px">Wallet</div>
+      </div>
+      <div onclick="go('s8')" style="flex:1;background:var(--card);border-radius:13px;padding:11px;border:1px solid var(--border);text-align:center;cursor:pointer">
+        <div style="font-size:20px;font-weight:800;color:var(--a);font-family:'Syne',sans-serif">5</div>
+        <div style="font-size:10px;color:var(--tm);margin-top:1px">Events</div>
+      </div>
+    </div>
+
+    <!-- Nearby Venues - show relevant ones per sport -->
+    <div class="slabel">Nearby Venues</div>
+
+    <!-- ALL venues -->
+    <div class="sport-content visible" data-cat="all">
+      <div class="vrow" onclick="go('s5')"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Koramangala Badminton Hub</div><div class="vmeta">1.2 km · ⭐ 4.8 · ₹300/hr</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fef3c7">⚽</div><div style="flex:1"><div class="vname">HSR Football Turf</div><div class="vmeta">2.5 km · ⭐ 4.5 · ₹800/hr</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#dcfce7">🏊</div><div style="flex:1"><div class="vname">Indiranagar Swim Club</div><div class="vmeta">3.1 km · ⭐ 4.6 · ₹400/hr</div></div><span class="b ba">Filling</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fce7f3">🎾</div><div style="flex:1"><div class="vname">Whitefield Tennis Academy</div><div class="vmeta">4.0 km · ⭐ 4.7 · ₹500/hr</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- BADMINTON venues -->
+    <div class="sport-content" data-cat="badminton">
+      <div class="vrow" onclick="go('s5')"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Koramangala Badminton Hub</div><div class="vmeta">1.2 km · ⭐ 4.8 · ₹300/hr · 4 courts</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Indiranagar Sports Hub</div><div class="vmeta">0.8 km · ⭐ 4.9 · ₹250/hr · Indoor</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Whitefield Badminton Club</div><div class="vmeta">3.1 km · ⭐ 4.6 · ₹350/hr</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- CRICKET venues -->
+    <div class="sport-content" data-cat="cricket">
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#dcfce7">🏏</div><div style="flex:1"><div class="vname">Chinnaswamy Ground</div><div class="vmeta">2.0 km · ⭐ 4.9 · ₹500/hr · Full pitch</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fef3c7">🏏</div><div style="flex:1"><div class="vname">HSR Cricket Academy</div><div class="vmeta">3.5 km · ⭐ 4.7 · ₹400/hr · Nets</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- FOOTBALL venues -->
+    <div class="sport-content" data-cat="football">
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fef3c7">⚽</div><div style="flex:1"><div class="vname">HSR Football Turf</div><div class="vmeta">2.5 km · ⭐ 4.5 · ₹800/hr · Astroturf</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#dcfce7">⚽</div><div style="flex:1"><div class="vname">Koramangala 5-a-side</div><div class="vmeta">1.8 km · ⭐ 4.4 · ₹600/hr · Floodlit</div></div><span class="b ba">Filling</span></div>
+    </div>
+
+    <!-- SWIMMING venues -->
+    <div class="sport-content" data-cat="swimming">
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#dbeafe">🏊</div><div style="flex:1"><div class="vname">Indiranagar Swim Club</div><div class="vmeta">3.1 km · ⭐ 4.6 · ₹400/hr · Olympic pool</div></div><span class="b ba">Filling</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#e0f2fe">🏊</div><div style="flex:1"><div class="vname">Koramangala Aquatic Centre</div><div class="vmeta">1.4 km · ⭐ 4.8 · ₹350/hr</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- GYM venues -->
+    <div class="sport-content" data-cat="gym">
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fee2e2">💪</div><div style="flex:1"><div class="vname">Iron Fit Gym</div><div class="vmeta">0.5 km · ⭐ 4.7 · ₹250/day · AC</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fef3c7">💪</div><div style="flex:1"><div class="vname">Cult.fit Koramangala</div><div class="vmeta">1.1 km · ⭐ 4.9 · ₹500/day · Classes</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- TENNIS venues -->
+    <div class="sport-content" data-cat="tennis">
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#fce7f3">🎾</div><div style="flex:1"><div class="vname">Whitefield Tennis Academy</div><div class="vmeta">4.0 km · ⭐ 4.7 · ₹500/hr · 3 courts</div></div><span class="b bg">Open</span></div>
+      <div class="vrow" onclick="go('s5')"><div class="vicon" style="background:#f3e8ff">🎾</div><div style="flex:1"><div class="vname">Koramangala Tennis Club</div><div class="vmeta">2.2 km · ⭐ 4.5 · ₹450/hr</div></div><span class="b bg">Open</span></div>
+    </div>
+
+    <!-- Top Trainers -->
+    <div class="slabel">Top Trainers</div>
+    <div class="tcards">
+      <div class="tcard" onclick="go('s18')">
+        <div class="av" style="margin:0 auto 7px;background:#7c3aed;width:42px;height:42px">RV</div>
+        <div style="font-size:13px;font-weight:600">Ravi V</div>
+        <div style="font-size:11px;color:var(--tm)">Badminton</div>
+        <div style="font-size:11px;color:var(--a)">⭐ 4.9</div>
+        <div style="font-size:11px;color:var(--p);margin-top:3px">₹600/hr</div>
+      </div>
+      <div class="tcard" onclick="go('s18')">
+        <div class="av" style="margin:0 auto 7px;background:#059669;width:42px;height:42px">SK</div>
+        <div style="font-size:13px;font-weight:600">Suresh K</div>
+        <div style="font-size:11px;color:var(--tm)">Cricket</div>
+        <div style="font-size:11px;color:var(--a)">⭐ 4.7</div>
+        <div style="font-size:11px;color:var(--p);margin-top:3px">₹500/hr</div>
+      </div>
+      <div class="tcard" onclick="go('s18')">
+        <div class="av" style="margin:0 auto 7px;background:#dc2626;width:42px;height:42px">PM</div>
+        <div style="font-size:13px;font-weight:600">Priya M</div>
+        <div style="font-size:11px;color:var(--tm)">Yoga</div>
+        <div style="font-size:11px;color:var(--a)">⭐ 5.0</div>
+        <div style="font-size:11px;color:var(--p);margin-top:3px">₹400/hr</div>
+      </div>
+      <div class="tcard" onclick="go('s18')">
+        <div class="av" style="margin:0 auto 7px;background:#0891b2;width:42px;height:42px">AR</div>
+        <div style="font-size:13px;font-weight:600">Amit R</div>
+        <div style="font-size:11px;color:var(--tm)">Swimming</div>
+        <div style="font-size:11px;color:var(--a)">⭐ 4.8</div>
+        <div style="font-size:11px;color:var(--p);margin-top:3px">₹450/hr</div>
+      </div>
+    </div>
+
+    <!-- Upcoming Activity -->
+    <div class="slabel">Your Next Activity</div>
+    <div onclick="go('s6')" style="background:var(--card);border-radius:13px;padding:13px 14px;margin:0 12px 10px;border:1.5px solid var(--p);cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--t)">🏸 Koramangala Badminton</div>
+          <div style="font-size:12px;color:var(--tm);margin-top:2px">Sun 23 Mar · 6:00 PM · Court 2</div>
+        </div>
+        <span class="b bb">Today</span>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:9px">
+        <button onclick="event.stopPropagation();go('s16')" style="flex:1;padding:7px;border-radius:8px;background:var(--pl);color:var(--p);border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💬 Chat</button>
+        <button onclick="event.stopPropagation();toast('Directions opened 📍')" style="flex:1;padding:7px;border-radius:8px;background:var(--bg);color:var(--tm);border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📍 Directions</button>
+      </div>
+    </div>
+    <div style="height:10px"></div>
+  </div>
+
+  <div class="bnav">
+    <button class="nb on" onclick="go('s3')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nb" onclick="go('s4')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></button>
+    <button class="nb" onclick="go('s8')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Events</span></button>
+    <button class="nb" onclick="go('s12')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════ S4 · SEARCH ═══════════════ -->
+<div class="screen" id="s4" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div style="background:var(--card);padding:10px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px">
+      <button class="back" onclick="go('s3')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:9px 13px;font-size:13px;color:var(--t)">🔍 Badminton in Indiranagar</div>
+      <button onclick="openSheet()" style="width:40px;height:40px;border-radius:11px;background:var(--p);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+        <div style="position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#f97316;border-radius:50%;border:1.5px solid #fff"></div>
+      </button>
+    </div>
+    <div class="chips" id="searchChips">
+      <span class="chip on" onclick="filterSearch(this,'all')">All</span>
+      <span class="chip"    onclick="filterSearch(this,'open')">Open Now</span>
+      <span class="chip"    onclick="filterSearch(this,'indoor')">Indoor</span>
+      <span class="chip"    onclick="filterSearch(this,'budget')">Under ₹500</span>
+      <span class="chip"    onclick="filterSearch(this,'trainer')">With Trainer</span>
+    </div>
+  </div>
+  <div class="body">
+    <div style="padding:10px 14px 6px;font-size:12px;color:var(--tm);font-weight:500" id="rcount">8 results found</div>
+    <div id="searchResults">
+      <div class="vrow" onclick="go('s5')" data-tags="all open indoor budget"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Indiranagar Sports Hub</div><div class="vmeta">0.8 km · ⭐ 4.9 · ₹250/hr</div><div style="margin-top:3px;display:flex;gap:4px"><span class="b bg">Open</span><span class="b bb">Indoor</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹250</div></div>
+      <div class="vrow" onclick="go('s5')" data-tags="all open budget"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Koramangala Badminton Hub</div><div class="vmeta">1.2 km · ⭐ 4.8 · ₹300/hr</div><div style="margin-top:3px"><span class="b bg">Open</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹300</div></div>
+      <div class="vrow" onclick="go('s5')" data-tags="all open budget trainer"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Whitefield Badminton Club</div><div class="vmeta">3.1 km · ⭐ 4.6 · ₹350/hr</div><div style="margin-top:3px;display:flex;gap:4px"><span class="b bg">Open</span><span class="b bb">Trainer</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹350</div></div>
+      <div class="vrow" onclick="go('s5')" data-tags="all open budget"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Marathahalli Shuttle Point</div><div class="vmeta">4.5 km · ⭐ 4.4 · ₹280/hr</div><div style="margin-top:3px"><span class="b ba">Closing Soon</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹280</div></div>
+      <div class="vrow" onclick="go('s5')" data-tags="all indoor budget"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">Electronic City Badminton</div><div class="vmeta">6.2 km · ⭐ 4.3 · ₹200/hr</div><div style="margin-top:3px;display:flex;gap:4px"><span class="b bb">Indoor</span><span class="b bg">Open</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹200</div></div>
+      <div class="vrow" onclick="go('s5')" data-tags="all open trainer"><div class="vicon">🏸</div><div style="flex:1"><div class="vname">BTM Badminton Academy</div><div class="vmeta">5.0 km · ⭐ 4.5 · ₹600/hr</div><div style="margin-top:3px;display:flex;gap:4px"><span class="b bg">Open</span><span class="b bb">Trainer</span></div></div><div style="font-size:13px;font-weight:700;color:var(--p)">₹600</div></div>
+    </div>
+  </div>
+  <!-- Filter Sheet -->
+  <div class="foverlay" id="fov" onclick="closeSheet()">
+    <div class="fsheet" onclick="event.stopPropagation()">
+      <div class="shandle"><div></div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--t)">Filters</div>
+        <button onclick="resetF()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:5px 11px;font-size:12px;cursor:pointer;color:var(--tm);font-family:'DM Sans',sans-serif">Reset</button>
+      </div>
+      <div style="padding:8px 16px 4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--t)">Max Price / hr</div>
+          <span id="pv" style="font-size:14px;font-weight:700;color:var(--p)">₹500</span>
+        </div>
+        <input type="range" id="pslider" min="100" max="2000" value="500" step="100" oninput="syncP(+this.value)" style="width:100%;accent-color:var(--p)">
+        <div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:11px;color:var(--tm)">₹100</span><span style="font-size:11px;color:var(--tm)">₹2000</span></div>
+        <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+          <span id="pc200" onclick="syncP(200)" style="padding:5px 11px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--tm)">Under ₹200</span>
+          <span id="pc300" onclick="syncP(300)" style="padding:5px 11px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--tm)">Under ₹300</span>
+          <span id="pc500" onclick="syncP(500)" style="padding:5px 11px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--p);background:var(--pl);color:var(--p)">Under ₹500</span>
+          <span id="pcAny" onclick="syncP(2000)" style="padding:5px 11px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--tm)">Any</span>
+        </div>
+      </div>
+      <div style="padding:8px 16px 4px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--t)">Max Distance</div>
+          <span id="dv" style="font-size:14px;font-weight:700;color:var(--p)">5 km</span>
+        </div>
+        <input type="range" id="dslider" min="1" max="40" value="10" step="1" oninput="document.getElementById('dv').textContent=(this.value/2)+' km'" style="width:100%;accent-color:var(--p)">
+        <div style="display:flex;justify-content:space-between;margin-top:3px"><span style="font-size:11px;color:var(--tm)">0.5 km</span><span style="font-size:11px;color:var(--tm)">20 km</span></div>
+      </div>
+      <div style="padding:8px 16px 4px">
+        <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Min Rating</div>
+        <div style="display:flex;gap:7px">
+          <span class="sc" onclick="scSel(this)">Any</span>
+          <span class="sc" onclick="scSel(this)">⭐ 3+</span>
+          <span class="sc sel" onclick="scSel(this)">⭐ 4+</span>
+          <span class="sc" onclick="scSel(this)">⭐ 4.5+</span>
+        </div>
+      </div>
+      <div style="padding:8px 16px 4px">
+        <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Amenities</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <span class="chip on" style="font-size:12px" onclick="this.classList.toggle('on')">🅿️ Parking</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">🚿 Shower</span>
+          <span class="chip on" style="font-size:12px" onclick="this.classList.toggle('on')">🏠 Indoor</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">🎯 Equipment</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">☕ Café</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">👨‍🏫 Trainer</span>
+        </div>
+      </div>
+      <div style="padding:8px 16px 14px">
+        <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Availability</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <span class="chip on" style="font-size:12px" onclick="this.classList.toggle('on')">Open Now</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">Morning</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">Evening</span>
+          <span class="chip"    style="font-size:12px" onclick="this.classList.toggle('on')">Weekend</span>
+        </div>
+      </div>
+      <div style="padding:0 14px 6px">
+        <button class="btn" id="applyBtn" onclick="closeSheet()">Apply Filters · 6 Results</button>
+      </div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="nb" onclick="go('s3')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nb on" onclick="go('s4')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></button>
+    <button class="nb" onclick="go('s8')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Events</span></button>
+    <button class="nb" onclick="go('s12')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════ S5 · VENUE DETAIL ═══════════════ -->
+<div class="screen" id="s5">
+  <div class="vhdr">
+    <div class="backover" onclick="go('s3')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <button class="heart-btn" id="heartBtn" data-saved="0" onclick="toggleHeart()">🤍</button>
+    🏸
+  </div>
+  <div class="body">
+    <div style="background:var(--card);padding:14px 15px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--t)">Koramangala Badminton Hub</div>
+          <div style="font-size:12px;color:var(--tm);margin-top:2px">📍 Koramangala, Bangalore · 1.2 km</div>
+        </div>
+        <span class="b bg" style="margin-top:3px">Open</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+        <div style="font-size:13px;color:var(--a)">⭐ 4.8</div>
+        <div style="font-size:12px;color:var(--tm)">124 reviews</div>
+        <div style="font-size:12px;color:var(--tm)">6 AM – 10 PM</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
+        <span class="b bb">4 Courts</span>
+        <span class="b bb">Parking</span>
+        <span class="b bb">Shower</span>
+        <span class="b bb">Equipment</span>
+        <span class="b bb">Café</span>
+      </div>
+    </div>
+    <div style="padding:12px 15px">
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:5px">About</div>
+      <div style="font-size:13px;color:var(--tm);line-height:1.6">Professional badminton facility with 4 well-maintained synthetic courts. Open for casual play, tournaments, and coaching. Suitable for all skill levels. Air-conditioned with proper lighting.</div>
+    </div>
+    <div style="padding:0 15px 12px">
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Pricing</div>
+      <div style="display:flex;gap:9px">
+        <div class="price-box"><div style="font-size:17px;font-weight:700;color:var(--p)">₹300</div><div style="font-size:11px;color:var(--tm)">court/hour</div></div>
+        <div class="price-box"><div style="font-size:17px;font-weight:700;color:var(--t)">₹50</div><div style="font-size:11px;color:var(--tm)">shuttlecock</div></div>
+        <div class="price-box"><div style="font-size:17px;font-weight:700;color:var(--a)">₹600</div><div style="font-size:11px;color:var(--tm)">with trainer</div></div>
+      </div>
+    </div>
+    <div style="padding:0 15px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;color:var(--t)">Reviews</div>
+        <button onclick="go('s21')" style="font-size:12px;color:var(--p);background:none;border:none;cursor:pointer;font-weight:600">See all →</button>
+      </div>
+      <div style="background:var(--card);border-radius:12px;padding:12px;border:1px solid var(--border);margin-bottom:7px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <div class="av" style="width:30px;height:30px;font-size:10px;background:#7c3aed">RV</div>
+          <div><div style="font-size:12px;font-weight:600">Ravi V</div><div style="font-size:10px;color:var(--a)">★★★★★</div></div>
+          <div style="margin-left:auto;font-size:10px;color:var(--tm)">2 days ago</div>
+        </div>
+        <div style="font-size:12px;color:var(--tm);line-height:1.5">Amazing courts! Very well maintained. Staff is friendly and helpful.</div>
+      </div>
+      <div style="background:var(--card);border-radius:12px;padding:12px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <div class="av" style="width:30px;height:30px;font-size:10px;background:#059669">SK</div>
+          <div><div style="font-size:12px;font-weight:600">Suresh K</div><div style="font-size:10px;color:var(--a)">★★★★☆</div></div>
+          <div style="margin-left:auto;font-size:10px;color:var(--tm)">1 week ago</div>
+        </div>
+        <div style="font-size:12px;color:var(--tm);line-height:1.5">Good courts, slightly expensive but worth it. Easy parking.</div>
+      </div>
+    </div>
+    <div style="height:6px"></div>
+  </div>
+  <div style="padding:11px 14px 20px;background:var(--card);border-top:1px solid var(--border)">
+    <button class="btn" onclick="go('s6')">Book a Slot →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S6 · BOOKING ═══════════════ -->
+<div class="screen" id="s6" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s5')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Book a Slot</div><div style="font-size:11px;color:var(--tm)">Koramangala Badminton Hub</div></div>
+  </div>
+  <div class="body">
+    <div class="slabel">Select Date</div>
+    <div style="display:flex;gap:7px;padding:0 12px 4px;overflow-x:auto">
+      <div class="dpill" onclick="dSel(this)"><span class="dd">SAT</span><span class="dn">22</span></div>
+      <div class="dpill on" onclick="dSel(this)"><span class="dd">SUN</span><span class="dn">23</span></div>
+      <div class="dpill" onclick="dSel(this)"><span class="dd">MON</span><span class="dn">24</span></div>
+      <div class="dpill" onclick="dSel(this)"><span class="dd">TUE</span><span class="dn">25</span></div>
+      <div class="dpill" onclick="dSel(this)"><span class="dd">WED</span><span class="dn">26</span></div>
+      <div class="dpill" onclick="dSel(this)"><span class="dd">THU</span><span class="dn">27</span></div>
+      <div class="dpill" onclick="dSel(this)"><span class="dd">FRI</span><span class="dn">28</span></div>
+    </div>
+    <div class="slabel">Duration</div>
+    <div style="display:flex;gap:7px;padding:0 12px 4px;flex-wrap:wrap">
+      <span class="sc" onclick="scSel(this)">30 min</span>
+      <span class="sc sel" onclick="scSel(this)">1 hour</span>
+      <span class="sc" onclick="scSel(this)">1.5 hrs</span>
+      <span class="sc" onclick="scSel(this)">2 hours</span>
+    </div>
+    <div class="slabel">Morning Slots</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 4px">
+      <span class="sc taken">6:00 AM</span>
+      <span class="sc sel" onclick="scSel(this)">7:00 AM</span>
+      <span class="sc" onclick="scSel(this)">8:00 AM</span>
+      <span class="sc" onclick="scSel(this)">9:00 AM</span>
+      <span class="sc taken">10:00 AM</span>
+      <span class="sc taken">11:00 AM</span>
+    </div>
+    <div class="slabel">Evening Slots</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 4px">
+      <span class="sc" onclick="scSel(this)">4:00 PM</span>
+      <span class="sc" onclick="scSel(this)">5:00 PM</span>
+      <span class="sc sel" onclick="scSel(this)">6:00 PM</span>
+      <span class="sc" onclick="scSel(this)">7:00 PM</span>
+      <span class="sc taken">8:00 PM</span>
+      <span class="sc" onclick="scSel(this)">9:00 PM</span>
+    </div>
+    <div class="slabel">Select Court</div>
+    <div style="display:flex;gap:7px;padding:0 12px 12px;flex-wrap:wrap">
+      <span class="sc" onclick="scSel(this)">Court 1</span>
+      <span class="sc sel" onclick="scSel(this)">Court 2</span>
+      <span class="sc" onclick="scSel(this)">Court 3</span>
+      <span class="sc taken">Court 4</span>
+    </div>
+    <div style="height:4px"></div>
+  </div>
+  <div style="background:var(--card);border-top:1px solid var(--border);padding:11px 14px 20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--tm)">Sun 23 Mar · 6:00 PM · Court 2</div>
+      <div style="font-size:17px;font-weight:700;color:var(--p)">₹300</div>
+    </div>
+    <button class="btn" onclick="go('s7')">Confirm Booking →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S7 · PAYMENT ═══════════════ -->
+<div class="screen" id="s7" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s6')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Payment</div>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div style="background:var(--bg);border-radius:14px;padding:14px;margin:12px 0;border:1px solid var(--border)">
+      <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:2px">Koramangala Badminton Hub</div>
+      <div style="font-size:12px;color:var(--tm)">Sun, 23 Mar · 6:00 PM · Court 2 · 1 hour</div>
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--tm)">Court fee</span><span>₹300</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:var(--tm)">Platform fee</span><span style="color:var(--g)">FREE</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:7px;border-top:1px solid var(--border)"><span>Total</span><span style="color:var(--p)">₹300</span></div>
+      </div>
+    </div>
+    <!-- Promo -->
+    <div style="display:flex;gap:7px;margin-bottom:12px">
+      <div style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px 12px;font-size:12px;color:var(--tm)">🎟️ Add promo code</div>
+      <button onclick="toast('Code applied! 🎉')" style="padding:10px 15px;background:var(--p);color:#fff;border:none;border-radius:11px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Apply</button>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:9px">Payment method</div>
+    <div class="pmethod on" onclick="pSel(this)"><div class="radio on"></div><div style="font-size:20px">📱</div><div><div style="font-size:13px;font-weight:500">UPI</div><div style="font-size:11px;color:var(--tm)">GPay · PhonePe · Paytm</div></div></div>
+    <div class="pmethod" onclick="pSel(this)"><div class="radio"></div><div style="font-size:20px">💳</div><div><div style="font-size:13px;font-weight:500">Card</div><div style="font-size:11px;color:var(--tm)">Visa · Mastercard · Rupay</div></div></div>
+    <div class="pmethod" onclick="pSel(this)"><div class="radio"></div><div style="font-size:20px">💰</div><div><div style="font-size:13px;font-weight:500">Wallet</div><div style="font-size:11px;color:var(--g)">Balance ₹600</div></div></div>
+    <div class="pmethod" onclick="pSel(this)"><div class="radio"></div><div style="font-size:20px">🏦</div><div><div style="font-size:13px;font-weight:500">Net Banking</div><div style="font-size:11px;color:var(--tm)">All major banks</div></div></div>
+    <div style="height:4px"></div>
+  </div>
+  <div style="padding:11px 14px 20px;background:var(--card);border-top:1px solid var(--border)">
+    <button class="btn" onclick="go('s7b')">Pay ₹300 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S7b · SUCCESS ═══════════════ -->
+<div class="screen" id="s7b" style="background:var(--card)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px">
+    <div class="sicon" style="background:var(--gl)">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--t);margin-bottom:7px">Booking Confirmed! 🎉</div>
+    <div style="font-size:13px;color:var(--tm);text-align:center;line-height:1.6;margin-bottom:20px">Your slot is booked. See you on the court!</div>
+    <div style="background:var(--bg);border-radius:14px;padding:14px;width:100%;border:1px solid var(--border);margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px"><span style="color:var(--tm)">Venue</span><span style="font-weight:500">Koramangala Badminton</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px"><span style="color:var(--tm)">Date & Time</span><span style="font-weight:500">Sun 23 Mar · 6 PM</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--tm)">Amount Paid</span><span style="font-weight:700;color:var(--p)">₹300</span></div>
+    </div>
+    <div style="display:flex;gap:7px;width:100%;margin-bottom:13px">
+      <button onclick="toast('Added to calendar 📅')" style="flex:1;padding:11px;border-radius:12px;background:var(--bg);border:1.5px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📅 Calendar</button>
+      <button onclick="go('s16')" style="flex:1;padding:11px;border-radius:12px;background:var(--pl);border:1.5px solid var(--p);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--p)">💬 Chat</button>
+    </div>
+    <button class="btn" onclick="go('s3')" style="margin-bottom:9px">Back to Home</button>
+    <button class="btn btn-ghost" onclick="go('s8')">Browse Events →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S8 · EVENTS ═══════════════ -->
+<div class="screen" id="s8" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t)">Events</div><div style="font-size:12px;color:var(--tm)">Near you in Bangalore</div></div>
+    <button onclick="go('s9')" style="background:var(--p);color:#fff;border:none;border-radius:11px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ Create</button>
+  </div>
+  <!-- Events filter chips -->
+  <div style="padding:9px 12px 7px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div class="chips" id="evChips">
+      <span class="chip on"  onclick="filterEvents(this,'all')">All</span>
+      <span class="chip"     onclick="filterEvents(this,'tournament')">🏆 Tournament</span>
+      <span class="chip"     onclick="filterEvents(this,'practice')">🎯 Practice</span>
+      <span class="chip"     onclick="filterEvents(this,'casual')">😊 Casual</span>
+      <span class="chip"     onclick="filterEvents(this,'free')">🆓 Free</span>
+    </div>
+  </div>
+  <div class="body">
+    <div class="ecard" onclick="go('s10')" data-ev="all tournament">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">🏏 Weekend Cricket Tournament</div>
+        <span class="b bg">Open</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 23 · 9:00 AM · Chinnaswamy Ground</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 12/20</span><span>🆓 Free</span><span>🏆 Tournament</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+    </div>
+    <div class="ecard" onclick="go('s10')" data-ev="all practice">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">🏸 Badminton Practice Session</div>
+        <span class="b ba">Filling Fast</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 24 · 7:00 AM · Koramangala Hub</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 7/8</span><span>💰 ₹150</span><span>🎯 Practice</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:87%;background:var(--a)"></div></div>
+    </div>
+    <div class="ecard" onclick="go('s10')" data-ev="all casual">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">⚽ 5-a-side Football</div>
+        <span class="b bg">Open</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 25 · 6:00 PM · HSR Turf</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 4/10</span><span>💰 ₹100</span><span>😊 Casual</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+    </div>
+    <div class="ecard" onclick="go('s10')" data-ev="all free">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">🧘 Morning Yoga Session</div>
+        <span class="b bg">Open</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 24 · 6:00 AM · Cubbon Park</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 5/20</span><span>🆓 Free</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+    </div>
+    <div class="ecard" onclick="go('s10')" data-ev="all tournament">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">🏊 Swimming Relay Race</div>
+        <span class="b bb">Upcoming</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 28 · 8:00 AM · Indiranagar Pool</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 8/16</span><span>💰 ₹200</span><span>🏆 Tournament</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+    </div>
+    <div class="ecard" onclick="go('s10')" data-ev="all casual free">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">🎾 Mixed Doubles Tennis</div>
+        <span class="b bg">Open</span>
+      </div>
+      <div style="font-size:11px;color:var(--tm);margin-bottom:3px">📅 Mar 30 · 7:00 AM · Whitefield</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--tm)"><span>👥 2/4</span><span>💰 ₹250</span><span>😊 Casual</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:50%;background:#8b5cf6"></div></div>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+  <div class="bnav">
+    <button class="nb" onclick="go('s3')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nb" onclick="go('s4')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></button>
+    <button class="nb on" onclick="go('s8')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Events</span></button>
+    <button class="nb" onclick="go('s12')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════ S9 · CREATE EVENT ═══════════════ -->
+<div class="screen" id="s9" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s8')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Create Event</div><div style="font-size:11px;color:var(--tm)">Organise a game near you</div></div>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+      <div><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Event Name</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">Weekend Badminton Practice</div></div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Sport</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="sc sel" onclick="scSel(this)">🏸 Badminton</span>
+          <span class="sc" onclick="scSel(this)">🏏 Cricket</span>
+          <span class="sc" onclick="scSel(this)">⚽ Football</span>
+          <span class="sc" onclick="scSel(this)">🎾 Tennis</span>
+        </div>
+      </div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Venue</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">📍 Koramangala Badminton Hub</div></div>
+      <div style="display:flex;gap:9px">
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Date</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">📅 Sun Mar 23</div></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Time</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">⏰ 7:00 AM</div></div>
+      </div>
+      <div style="display:flex;gap:9px">
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Max Players</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">👥 8</div></div>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Entry Fee</div><div style="background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:11px 12px;font-size:13px;color:var(--t)">💰 ₹150</div></div>
+      </div>
+      <div><div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Skill Level</div>
+        <div style="display:flex;gap:7px">
+          <span class="sc" onclick="scSel(this)">All</span>
+          <span class="sc sel" onclick="scSel(this)">Beginner</span>
+          <span class="sc" onclick="scSel(this)">Intermediate</span>
+          <span class="sc" onclick="scSel(this)">Advanced</span>
+        </div>
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+  <div style="padding:11px 14px 20px;background:var(--card);border-top:1px solid var(--border)">
+    <button class="btn" onclick="toast('Event created! 🎉');go('s8')">Publish Event 🎉</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S10 · EVENT DETAIL ═══════════════ -->
+<div class="screen" id="s10">
+  <div style="background:linear-gradient(135deg,#1a6ef8,#0a2d6e);padding:50px 15px 18px;position:relative;flex-shrink:0">
+    <div onclick="go('s8')" style="position:absolute;top:50px;left:13px;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;cursor:pointer">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:3px">TOURNAMENT</div>
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:3px">Weekend Cricket Tournament</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.8)">📅 Mar 23 · 9:00 AM · Chinnaswamy Ground</div>
+  </div>
+  <div class="body">
+    <div style="padding:14px 14px 0">
+      <div style="background:var(--pl);border-radius:13px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:600;color:var(--p)">12/20 spots filled</span>
+          <span style="font-size:12px;font-weight:700;color:var(--p)">🆓 Free</span>
+        </div>
+        <div class="pbar"><div class="pfill" style="width:60%"></div></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Players Joined</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="av">RK</div>
+        <div class="av" style="background:#059669">AJ</div>
+        <div class="av" style="background:#dc2626">MS</div>
+        <div class="av" style="background:#7c3aed">VR</div>
+        <div class="av" style="background:#b45309">SK</div>
+        <div style="width:36px;height:36px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tm)">+7</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Your Position</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+        <span class="sc sel" onclick="scSel(this)">Batsman</span>
+        <span class="sc" onclick="scSel(this)">Bowler</span>
+        <span class="sc" onclick="scSel(this)">All-rounder</span>
+        <span class="sc" onclick="scSel(this)">Wicket-keeper</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Organizer</div>
+      <div style="display:flex;align-items:center;gap:9px;background:var(--bg);border-radius:11px;padding:10px 12px;border:1px solid var(--border);margin-bottom:12px">
+        <div class="av" style="background:#059669;width:36px;height:36px">SK</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--t)">Suresh K</div><div style="font-size:11px;color:var(--tm)">Organizer · ⭐ 4.8</div></div>
+        <button onclick="go('s16')" style="background:var(--pl);color:var(--p);border:none;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💬 Chat</button>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:6px">About</div>
+      <div style="font-size:12px;color:var(--tm);line-height:1.6;margin-bottom:10px">Friendly tournament for all skill levels. Teams formed on the day. Bring your own bat — everything else is provided.</div>
+    </div>
+    <div style="height:6px"></div>
+  </div>
+  <div style="padding:11px 14px 20px;background:var(--card);border-top:1px solid var(--border);display:flex;gap:9px">
+    <button onclick="go('s16')" style="width:48px;height:46px;background:var(--bg);border:1.5px solid var(--border);border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--p)" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    </button>
+    <button class="btn" style="flex:1" onclick="go('s11')">Join Event — Free →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S11 · JOIN SUCCESS ═══════════════ -->
+<div class="screen" id="s11" style="background:var(--card)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px">
+    <div class="sicon" style="background:var(--gl)">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--g)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--t);margin-bottom:7px">You're In! 🎉</div>
+    <div style="font-size:13px;color:var(--tm);text-align:center;line-height:1.6;margin-bottom:20px">You've joined the Weekend Cricket Tournament!</div>
+    <div style="background:var(--bg);border-radius:14px;padding:14px;width:100%;border:1px solid var(--border);margin-bottom:13px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px"><span style="color:var(--tm)">Event</span><span style="font-weight:500">Weekend Cricket</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px"><span style="color:var(--tm)">Date</span><span style="font-weight:500">Sun 23 Mar · 9 AM</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--tm)">Your Role</span><span style="font-weight:700;color:var(--p)">Batsman</span></div>
+    </div>
+    <button class="btn" onclick="go('s3')" style="margin-bottom:9px">Back to Home</button>
+    <button class="btn btn-ghost" onclick="go('s12')">View Profile →</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S12 · PROFILE ═══════════════ -->
+<div class="screen" id="s12" style="padding-top:44px">
+  <div class="sbar dark" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div style="background:linear-gradient(135deg,#0a1628,#1a1a3e);padding:18px 15px 22px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:13px;margin-bottom:14px">
+      <div class="av" style="width:52px;height:52px;font-size:16px;border:2px solid rgba(255,255,255,.3);background:linear-gradient(135deg,#1a6ef8,#7c3aed)">AK</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff">Akash Kumar</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6)">Player · Bangalore</div>
+        <div style="font-size:11px;color:var(--a);margin-top:1px">⭐ 4.7 rating</div>
+      </div>
+      <button onclick="go('s13')" style="margin-left:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:6px 11px;font-size:11px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif">Edit</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="stat-box" onclick="go('s6')" style="cursor:pointer"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff">14</div><div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px">Bookings</div></div>
+      <div class="stat-box" onclick="go('s8')" style="cursor:pointer"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff">8</div><div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px">Events</div></div>
+      <div class="stat-box"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff">23</div><div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px">Friends</div></div>
+      <div class="stat-box" onclick="go('s20')" style="cursor:pointer"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#4ade80">₹600</div><div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:1px">Wallet</div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slabel">My Sports</div>
+    <div style="display:flex;gap:7px;padding:0 12px 4px;flex-wrap:wrap">
+      <span class="chip on">🏸 Badminton</span>
+      <span class="chip on">🏏 Cricket</span>
+      <span class="chip on">🏀 Basketball</span>
+      <span class="chip" onclick="toast('Add sport coming soon')">+ Add</span>
+    </div>
+    <div class="rbanner" onclick="go('s17')" style="background:linear-gradient(135deg,#0a1628,#1a3a5e);border:1px solid #2a4a7e">
+      <div class="ricon" style="background:rgba(26,110,248,.3)">🏟️</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">Venue Host View</div><div style="font-size:11px;color:rgba(255,255,255,.55)">Manage courts & bookings</div></div>
+      <div style="font-size:18px;color:rgba(255,255,255,.4)">›</div>
+    </div>
+    <div class="rbanner" onclick="go('s18')" style="background:linear-gradient(135deg,#1a0a2e,#3a1a5e);border:1px solid #5a2a9e">
+      <div class="ricon" style="background:rgba(124,58,237,.3)">🎽</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#fff">Trainer View</div><div style="font-size:11px;color:rgba(255,255,255,.55)">Manage sessions & clients</div></div>
+      <div style="font-size:18px;color:rgba(255,255,255,.4)">›</div>
+    </div>
+    <div class="slabel">Upcoming Activities</div>
+    <div onclick="go('s6')" style="background:var(--card);border-radius:13px;padding:12px 14px;margin:0 12px 9px;border:1px solid var(--border);cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">🏸 Koramangala Badminton</div><div style="font-size:11px;color:var(--tm)">Sun 23 Mar · 6:00 PM</div></div><span class="b bb">Booked</span></div>
+    </div>
+    <div onclick="go('s10')" style="background:var(--card);border-radius:13px;padding:12px 14px;margin:0 12px 9px;border:1px solid var(--border);cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">🏏 Weekend Cricket Tournament</div><div style="font-size:11px;color:var(--tm)">Sun 23 Mar · 9:00 AM</div></div><span class="b bg">Joined</span></div>
+    </div>
+    <div class="slabel">Settings</div>
+    <div class="card-box" style="margin-bottom:14px">
+      <div class="srow" onclick="go('s13')"><div class="srl"><span>✏️</span><span>Edit Profile</span></div><span style="color:var(--tl)">›</span></div>
+      <div class="srow" onclick="go('s14')"><div class="srl"><span>🔔</span><span>Notifications</span></div><span style="color:var(--tl)">›</span></div>
+      <div class="srow" onclick="go('s20')"><div class="srl"><span>💰</span><span>Wallet & Payments</span></div><span style="color:var(--tl)">›</span></div>
+      <div class="srow" onclick="toast('Help center opening 💡')"><div class="srl"><span>❓</span><span>Help & Support</span></div><span style="color:var(--tl)">›</span></div>
+      <div class="srow" onclick="go('s15')" style="border-bottom:none"><div class="srl" style="color:var(--r)"><span>🚪</span><span>Log Out</span></div><span style="color:var(--tl)">›</span></div>
+    </div>
+    <div style="text-align:center;padding-bottom:14px;font-size:10px;color:var(--tl)">SportZone v3.0 · Designed by Akash</div>
+  </div>
+  <div class="bnav">
+    <button class="nb" onclick="go('s3')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nb" onclick="go('s4')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><span>Search</span></button>
+    <button class="nb" onclick="go('s8')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Events</span></button>
+    <button class="nb on" onclick="go('s12')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════ S13 · EDIT PROFILE ═══════════════ -->
+<div class="screen" id="s13" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s12')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Edit Profile</div>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:18px 0 14px">
+      <div class="av" style="width:66px;height:66px;font-size:20px;position:relative;background:linear-gradient(135deg,#1a6ef8,#7c3aed)">AK
+        <div onclick="toast('Photo upload coming 📷')" style="position:absolute;bottom:0;right:0;width:20px;height:20px;background:var(--p);border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer">✏️</div>
+      </div>
+      <div onclick="toast('Photo upload coming 📷')" style="font-size:12px;color:var(--p);margin-top:7px;cursor:pointer;font-weight:500">Change Photo</div>
+    </div>
+    <div class="card-box" style="margin-bottom:12px">
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border)"><div style="font-size:10px;color:var(--tm);margin-bottom:3px">Full Name</div><div style="font-size:13px;color:var(--t);background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)">Akash Kumar</div></div>
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border)"><div style="font-size:10px;color:var(--tm);margin-bottom:3px">Phone</div><div style="font-size:13px;color:var(--t);background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)">+91 98765 43210</div></div>
+      <div style="padding:11px 14px;border-bottom:1px solid var(--border)"><div style="font-size:10px;color:var(--tm);margin-bottom:3px">Email</div><div style="font-size:13px;color:var(--t);background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)">akash.kumar@gmail.com</div></div>
+      <div style="padding:11px 14px"><div style="font-size:10px;color:var(--tm);margin-bottom:3px">City</div><div style="font-size:13px;color:var(--t);background:var(--bg);border-radius:8px;padding:8px 10px;border:1px solid var(--border)">📍 Bangalore</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Role</div>
+    <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap">
+      <span class="sc sel" onclick="scSel(this)">Player</span>
+      <span class="sc" onclick="scSel(this)">Trainer</span>
+      <span class="sc" onclick="scSel(this)">Club Host</span>
+      <span class="sc" onclick="scSel(this)">Venue Owner</span>
+    </div>
+  </div>
+  <div style="padding:11px 14px 20px;background:var(--card);border-top:1px solid var(--border)">
+    <button class="btn" onclick="toast('Profile saved ✓');go('s12')">Save Changes ✓</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S14 · NOTIFICATIONS SETTINGS ═══════════════ -->
+<div class="screen" id="s14" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s12')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Notifications</div>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div class="card-box" style="margin:12px 0 14px">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">Booking Reminders</div><div style="font-size:11px;color:var(--tm)">1 hour before your slot</div></div><div class="tog on" id="t1" onclick="togSel('t1')"><div class="th"></div></div></div>
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">Event Updates</div><div style="font-size:11px;color:var(--tm)">When joined events change</div></div><div class="tog on" id="t2" onclick="togSel('t2')"><div class="th"></div></div></div>
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">New Events Nearby</div><div style="font-size:11px;color:var(--tm)">Events within 5 km</div></div><div class="tog" id="t3" onclick="togSel('t3')"><div class="th"></div></div></div>
+      <div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:500;color:var(--t)">Promotions & Offers</div><div style="font-size:11px;color:var(--tm)">Deals from nearby venues</div></div><div class="tog" id="t4" onclick="togSel('t4')"><div class="th"></div></div></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Recent</div>
+    <div class="card-box">
+      <div class="ni"><div class="nicon" style="background:var(--pl)">🏸</div><div><div style="font-size:12px;font-weight:500;color:var(--t)">Booking Confirmed</div><div style="font-size:11px;color:var(--tm)">Koramangala · Sun 6 PM</div><div style="font-size:10px;color:var(--tl);margin-top:1px">2 hours ago</div></div></div>
+      <div class="ni"><div class="nicon" style="background:var(--gl)">🏏</div><div><div style="font-size:12px;font-weight:500;color:var(--t)">Event Reminder</div><div style="font-size:11px;color:var(--tm)">Cricket Tournament tomorrow</div><div style="font-size:10px;color:var(--tl);margin-top:1px">5 hours ago</div></div></div>
+      <div class="ni" style="border-bottom:none"><div class="nicon" style="background:var(--al)">⭐</div><div><div style="font-size:12px;font-weight:500;color:var(--t)">Rate your experience</div><div style="font-size:11px;color:var(--tm)">How was HSR Football Turf?</div><div style="font-size:10px;color:var(--tl);margin-top:1px">Yesterday</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S15 · LOGOUT ═══════════════ -->
+<div class="screen" id="s15" style="background:var(--card)">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px">
+    <div style="width:76px;height:76px;border-radius:50%;background:#fff5f5;display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:34px">🚪</div>
+    <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t);margin-bottom:7px">Log Out?</div>
+    <div style="font-size:13px;color:var(--tm);text-align:center;line-height:1.6;margin-bottom:28px">Are you sure you want to log out of your SportZone account?</div>
+    <button class="btn btn-red" onclick="go('s1')" style="margin-bottom:9px">Yes, Log Out</button>
+    <button class="btn btn-out" onclick="go('s12')">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══════════════ S16 · CHAT ═══════════════ -->
+<div class="screen" id="s16" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div style="background:var(--card);padding:10px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0">
+    <button class="back" onclick="go('s10')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="av" style="background:#059669;width:36px;height:36px;font-size:12px">SK</div>
+    <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--t)">Suresh K</div><div style="font-size:10px;color:var(--g)">● Online</div></div>
+    <button onclick="toast('Call feature coming 📞')" style="width:34px;height:34px;border-radius:10px;background:var(--pl);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center">📞</button>
+  </div>
+  <div class="body" id="chatMsgs" style="padding:14px;display:flex;flex-direction:column;gap:9px">
+    <div class="bin"><div class="av" style="background:#059669;width:26px;height:26px;font-size:9px;flex-shrink:0">SK</div><div class="bbody"><div class="btext">Hey! Thanks for showing interest in the tournament 🏏</div><div class="btime">9:15 AM</div></div></div>
+    <div class="bin"><div class="av" style="background:#059669;width:26px;height:26px;font-size:9px;flex-shrink:0">SK</div><div class="bbody"><div class="btext">What position do you usually play?</div><div class="btime">9:16 AM</div></div></div>
+    <div class="bout"><div class="bbody"><div class="btext">Hi! I usually bat in the middle order 🙂</div><div class="btime">9:18 AM ✓✓</div></div></div>
+    <div class="bin"><div class="av" style="background:#059669;width:26px;height:26px;font-size:9px;flex-shrink:0">SK</div><div class="bbody"><div class="btext">Perfect! Arrive by 8:45 AM for warm-ups. See you Sunday! 👍</div><div class="btime">9:20 AM</div></div></div>
+    <div id="qreplies" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px">
+      <button class="qr" onclick="sendQR(this)">👍 Got it!</button>
+      <button class="qr" onclick="sendQR(this)">What gear to bring?</button>
+      <button class="qr" onclick="sendQR(this)">Is parking available?</button>
+    </div>
+  </div>
+  <div style="background:var(--card);border-top:1px solid var(--border);padding:9px 12px;display:flex;gap:9px;align-items:center;flex-shrink:0">
+    <div id="cinput" contenteditable="true" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--tm);outline:none;min-height:38px;max-height:76px;overflow-y:auto">Type a message…</div>
+    <button onclick="sendMsg()" style="width:40px;height:40px;border-radius:50%;background:var(--p);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 3px 10px rgba(26,110,248,.4)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ S17 · VENUE HOST DASHBOARD ═══════════════ -->
+<div class="screen" id="s17">
+  <div class="dhdr" style="background:linear-gradient(135deg,#0a1628,#1a3a5e)">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:0">
+      <button class="back" onclick="go('s12')" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"><svg viewBox="0 0 24 24" style="stroke:#fff"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div style="flex:1"><div style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px">VENUE HOST</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff">Koramangala Badminton Hub</div></div>
+      <div style="background:rgba(34,197,94,.2);border:1px solid rgba(34,197,94,.4);border-radius:8px;padding:3px 9px;font-size:10px;font-weight:600;color:#4ade80">● Live</div>
+    </div>
+    <div class="dstats">
+      <div class="dstat"><div class="dnum">12</div><div class="dlabel">Bookings</div></div>
+      <div class="dstat"><div class="dnum" style="color:#4ade80">₹3.6k</div><div class="dlabel">Revenue</div></div>
+      <div class="dstat"><div class="dnum" style="color:#facc15">85%</div><div class="dlabel">Occupancy</div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slabel">Today's Schedule</div>
+    <div style="margin:0 12px">
+      <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto">
+        <span class="chip on" style="font-size:11px">Court 1</span>
+        <span class="chip" style="font-size:11px" onclick="this.classList.toggle('on')">Court 2</span>
+        <span class="chip" style="font-size:11px" onclick="this.classList.toggle('on')">Court 3</span>
+        <span class="chip" style="font-size:11px" onclick="this.classList.toggle('on')">Court 4</span>
+      </div>
+      <div class="trow"><div class="ttime">6:00 AM</div><div class="tblock cf"><div class="tname">Akash Kumar</div><div class="tmeta">Confirmed · ₹300</div></div></div>
+      <div class="trow"><div class="ttime">7:00 AM</div><div class="tblock cf"><div class="tname">Priya Mehta</div><div class="tmeta">Confirmed · ₹300</div></div></div>
+      <div class="trow"><div class="ttime">8:00 AM</div><div class="tblock av"><div class="tname" style="color:var(--tm)">Available</div></div></div>
+      <div class="trow"><div class="ttime">9:00 AM</div><div class="tblock pe"><div class="tname">Ravi Verma</div><div class="tmeta">Pending · ₹300</div></div></div>
+    </div>
+    <div class="slabel">Pending Actions</div>
+    <div class="card-box" style="margin:0 12px 12px">
+      <div style="padding:11px 13px;border-bottom:1px solid var(--border)" id="pendRow">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><div><div style="font-size:12px;font-weight:600;color:var(--t)">Ravi Verma</div><div style="font-size:11px;color:var(--tm)">9 AM · Court 1 · ₹300</div></div><span class="b ba">Pending</span></div>
+        <div style="display:flex;gap:7px">
+          <button onclick="acceptReq(this)" style="flex:1;background:var(--gl);color:#166534;border:1px solid #bbf7d0;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Accept</button>
+          <button onclick="acceptReq(this)" style="flex:1;background:#fff5f5;color:var(--r);border:1px solid #fecaca;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Decline</button>
+        </div>
+      </div>
+      <div style="padding:11px 13px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:12px;font-weight:500;color:var(--t)">New message from Akash K.</div><div style="font-size:11px;color:var(--tm)">"Is Court 2 free this Sunday?"</div></div>
+        <button onclick="go('s16')" style="background:var(--pl);color:var(--p);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Reply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S18 · TRAINER DASHBOARD ═══════════════ -->
+<div class="screen" id="s18">
+  <div class="dhdr" style="background:linear-gradient(135deg,#1a0a2e,#3a1a6e)">
+    <div style="display:flex;align-items:center;gap:9px">
+      <button class="back" onclick="go('s12')" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)"><svg viewBox="0 0 24 24" style="stroke:#fff"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div style="flex:1"><div style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px">TRAINER VIEW</div><div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff">Ravi Verma · Badminton</div></div>
+      <div style="background:rgba(167,139,250,.25);border:1px solid rgba(167,139,250,.4);border-radius:8px;padding:3px 9px;font-size:10px;font-weight:600;color:#c4b5fd">⭐ 4.9</div>
+    </div>
+    <div class="dstats">
+      <div class="dstat"><div class="dnum">5</div><div class="dlabel">Today</div></div>
+      <div class="dstat"><div class="dnum" style="color:#c4b5fd">18</div><div class="dlabel">Clients</div></div>
+      <div class="dstat"><div class="dnum" style="color:#4ade80">₹4.2k</div><div class="dlabel">This Week</div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="slabel">Today's Sessions</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin:0 12px">
+      <div style="background:var(--card);border-radius:13px;padding:11px 12px;border:1.5px solid var(--g);display:flex;gap:10px;align-items:center">
+        <div style="text-align:center;min-width:42px"><div style="font-size:10px;color:var(--tm)">NOW</div><div style="font-size:12px;font-weight:700;color:var(--g)">6 AM</div></div>
+        <div style="width:1px;height:32px;background:var(--border)"></div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Akash Kumar — Beginner</div><div style="font-size:11px;color:var(--tm)">Court 2 · 1 hr</div></div>
+        <div class="av" style="width:30px;height:30px;font-size:10px">AK</div>
+      </div>
+      <div style="background:var(--card);border-radius:13px;padding:11px 12px;border:1px solid var(--border);display:flex;gap:10px;align-items:center">
+        <div style="text-align:center;min-width:42px"><div style="font-size:10px;color:var(--tm)">NEXT</div><div style="font-size:12px;font-weight:700;color:var(--p)">8 AM</div></div>
+        <div style="width:1px;height:32px;background:var(--border)"></div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Priya Mehta — Intermediate</div><div style="font-size:11px;color:var(--tm)">Court 1 · 1.5 hr</div></div>
+        <div class="av" style="width:30px;height:30px;font-size:10px;background:#dc2626">PM</div>
+      </div>
+    </div>
+    <div class="slabel">Active Clients</div>
+    <div style="margin:0 12px 8px">
+      <div class="crow"><div class="av" style="width:36px;height:36px;font-size:12px">AK</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Akash Kumar</div><div style="font-size:11px;color:var(--tm)">12 sessions · Beginner→Intermediate</div><div class="cprog"><div class="cpfill" style="width:65%"></div></div></div><button onclick="go('s16')" style="background:var(--pl);color:var(--p);border:none;border-radius:8px;padding:6px 9px;font-size:13px;cursor:pointer">💬</button></div>
+      <div class="crow"><div class="av" style="width:36px;height:36px;font-size:12px;background:#dc2626">PM</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Priya Mehta</div><div style="font-size:11px;color:var(--tm)">8 sessions · Intermediate</div><div class="cprog"><div class="cpfill" style="width:45%"></div></div></div><button onclick="go('s16')" style="background:var(--pl);color:var(--p);border:none;border-radius:8px;padding:6px 9px;font-size:13px;cursor:pointer">💬</button></div>
+    </div>
+    <div class="slabel">New Requests</div>
+    <div class="card-box" style="margin:0 12px 14px;padding:12px" id="trainReq">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+        <div class="av" style="background:#b45309;width:34px;height:34px;font-size:11px">SK</div>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Sanjay K wants coaching</div><div style="font-size:11px;color:var(--tm)">Beginner · 3×/week · ₹600/session</div></div>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button onclick="acceptReq(this)" style="flex:1;background:var(--gl);color:#166534;border:1px solid #bbf7d0;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✓ Accept</button>
+        <button onclick="go('s16')" style="flex:1;background:var(--pl);color:var(--p);border:1px solid #b5d4f4;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">💬 Chat</button>
+        <button onclick="acceptReq(this)" style="flex:1;background:#fff5f5;color:var(--r);border:1px solid #fecaca;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✕ Decline</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S19 · NOTIFICATIONS HUB ═══════════════ -->
+<div class="screen" id="s19" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="back" onclick="go('s3')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Notifications</div>
+    </div>
+    <button onclick="toast('All cleared!')" style="background:none;border:none;font-size:12px;color:var(--p);cursor:pointer;font-weight:600;font-family:'DM Sans',sans-serif">Clear all</button>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin:12px 0 8px">Today</div>
+    <div class="card-box" style="margin-bottom:10px">
+      <div class="ni" onclick="go('s7b')" style="background:#f0f6ff"><div class="nicon" style="background:var(--pl)">🏸</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Booking Confirmed ✓</div><div style="font-size:11px;color:var(--tm)">Koramangala · Sun 6 PM · ₹300</div><div style="font-size:10px;color:var(--tl);margin-top:1px">2 hours ago</div></div><div style="font-size:8px;color:var(--p)">●</div></div>
+      <div class="ni" onclick="go('s16')" style="border-bottom:none"><div class="nicon" style="background:#f3e8ff">💬</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Suresh K sent a message</div><div style="font-size:11px;color:var(--tm)">"Arrive by 8:45 AM for warm-ups!"</div><div style="font-size:10px;color:var(--tl);margin-top:1px">3 hours ago</div></div></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin:8px 0 8px">Yesterday</div>
+    <div class="card-box">
+      <div class="ni" onclick="go('s10')"><div class="nicon" style="background:var(--gl)">🏏</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Event Reminder</div><div style="font-size:11px;color:var(--tm)">Cricket Tournament is tomorrow</div><div style="font-size:10px;color:var(--tl);margin-top:1px">Yesterday 8 PM</div></div></div>
+      <div class="ni" onclick="go('s21')" style="border-bottom:none"><div class="nicon" style="background:var(--al)">⭐</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Rate your last session</div><div style="font-size:11px;color:var(--tm)">How was HSR Football Turf?</div><div style="font-size:10px;color:var(--tl);margin-top:1px">Yesterday 12 PM</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S20 · WALLET ═══════════════ -->
+<div class="screen" id="s20" style="padding-top:44px">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s12')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Wallet</div>
+  </div>
+  <div class="body" style="padding:0 12px">
+    <div class="wbal">
+      <div style="font-size:10px;color:rgba(255,255,255,.6);letter-spacing:1px;margin-bottom:3px">BALANCE</div>
+      <div style="font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:#fff;margin-bottom:3px">₹600</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6)">Available on bookings</div>
+      <div style="display:flex;gap:7px;margin-top:14px">
+        <button onclick="toast('Add money 💳')" style="flex:1;padding:9px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ Add Money</button>
+        <button onclick="toast('Withdraw 🏦')" style="flex:1;padding:9px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Withdraw</button>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin:4px 0 8px">Transactions</div>
+    <div class="card-box" style="margin-bottom:12px">
+      <div style="padding:11px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:10px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:15px">💰</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Money Added</div><div style="font-size:11px;color:var(--tm)">Via UPI · Mar 20</div></div><div style="font-size:13px;font-weight:700;color:var(--g)">+₹500</div></div>
+      <div style="padding:11px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;font-size:15px">🏸</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Badminton Court</div><div style="font-size:11px;color:var(--tm)">Koramangala · Mar 16</div></div><div style="font-size:13px;font-weight:700;color:var(--r)">-₹300</div></div>
+      <div style="padding:11px 13px;display:flex;align-items:center;gap:9px"><div style="width:34px;height:34px;border-radius:10px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:15px">🎁</div><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--t)">Referral Bonus</div><div style="font-size:11px;color:var(--tm)">Friend joined · Mar 14</div></div><div style="font-size:13px;font-weight:700;color:var(--g)">+₹100</div></div>
+    </div>
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:13px;padding:13px;border:1px solid #bbf7d0">
+      <div style="font-size:13px;font-weight:600;color:var(--g);margin-bottom:3px">🎁 Refer & Earn</div>
+      <div style="font-size:12px;color:#166534;line-height:1.5;margin-bottom:9px">Invite friends, earn ₹100 for every friend who books!</div>
+      <button onclick="toast('Link copied! 🔗')" style="background:var(--g);color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Copy Referral Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ S21 · RATE & REVIEW ═══════════════ -->
+<div class="screen" id="s21" style="padding-top:44px;background:var(--card)">
+  <div class="sbar" style="position:absolute;top:0"><div class="notch"></div><span style="z-index:1">9:41</span><span style="z-index:1">●●● 4G</span></div>
+  <div class="topbar" style="display:flex;align-items:center;gap:10px">
+    <button class="back" onclick="go('s5')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t)">Rate & Review</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 16px">
+    <div style="font-size:46px;margin-bottom:11px">🏸</div>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--t);margin-bottom:3px">Koramangala Badminton Hub</div>
+    <div style="font-size:12px;color:var(--tm);margin-bottom:20px">Sun 23 Mar · 6:00 PM</div>
+    <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:10px">How was your experience?</div>
+    <div id="stars" style="display:flex;gap:6px;margin-bottom:20px">
+      <span class="star" onclick="rateStar(1)">★</span>
+      <span class="star" onclick="rateStar(2)">★</span>
+      <span class="star" onclick="rateStar(3)">★</span>
+      <span class="star" onclick="rateStar(4)">★</span>
+      <span class="star" onclick="rateStar(5)" style="color:var(--tl)">★</span>
+    </div>
+    <div style="width:100%;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">What did you love?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="sc sel" onclick="this.classList.toggle('sel')">🏸 Great Courts</span>
+        <span class="sc" onclick="this.classList.toggle('sel')">🧹 Clean</span>
+        <span class="sc sel" onclick="this.classList.toggle('sel')">👥 Friendly Staff</span>
+        <span class="sc" onclick="this.classList.toggle('sel')">🅿️ Easy Parking</span>
+        <span class="sc" onclick="this.classList.toggle('sel')">💡 Good Lighting</span>
+      </div>
+    </div>
+    <div style="width:100%;margin-bottom:18px">
+      <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:7px">Write a review</div>
+      <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 12px;font-size:13px;color:var(--tm);min-height:70px;line-height:1.5">Amazing facility! Very well maintained courts…</div>
+    </div>
+    <button class="btn" style="width:100%" onclick="toast('Review submitted! ⭐ Thank you!');go('s3')">Submit Review ⭐</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── NAVIGATION ──────────────────────────────────────
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById(id);
+  if(t){t.classList.add('active');const b=t.querySelector('.body');if(b)b.scrollTop=0;}
+}
+
+// ── CLOCK ───────────────────────────────────────────
+function tick(){
+  const n=new Date(),h=n.getHours(),m=String(n.getMinutes()).padStart(2,'0'),s=h+':'+m;
+  document.querySelectorAll('[id^="clk"]').forEach(e=>e.textContent=s);
+}tick();setInterval(tick,30000);
+
+// ── TOAST ───────────────────────────────────────────
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el=document.createElement('div');
+  el.className='toast';el.textContent=msg;
+  document.getElementById('app').appendChild(el);
+  setTimeout(()=>el.remove(),2400);
+}
+
+// ── HOME SPORT FILTER ────────────────────────────────
+function filterHome(chip, cat){
+  // Update chip styles
+  document.querySelectorAll('#homeChips .chip').forEach(c=>c.classList.remove('on'));
+  chip.classList.add('on');
+
+  // Show/hide sport-content blocks
+  document.querySelectorAll('#homeBody .sport-content').forEach(el=>{
+    const cats = el.getAttribute('data-cat') || 'all';
+    if(cat==='all'){
+      // Show all blocks that have 'all' in their data-cat
+      el.classList.toggle('visible', cats.includes('all'));
+    } else {
+      // Show block if its data-cat contains the selected category (or 'all')
+      el.classList.toggle('visible', cats.includes(cat));
+    }
+  });
+}
+
+// ── EVENTS FILTER ────────────────────────────────────
+function filterEvents(chip, cat){
+  document.querySelectorAll('#evChips .chip').forEach(c=>c.classList.remove('on'));
+  chip.classList.add('on');
+  document.querySelectorAll('#s8 .ecard').forEach(card=>{
+    const tags = card.getAttribute('data-ev') || '';
+    card.style.display = (cat==='all' || tags.includes(cat)) ? '' : 'none';
+  });
+}
+
+// ── SEARCH FILTER ────────────────────────────────────
+function filterSearch(chip, cat){
+  document.querySelectorAll('#searchChips .chip').forEach(c=>c.classList.remove('on'));
+  chip.classList.add('on');
+  let count=0;
+  document.querySelectorAll('#searchResults .vrow').forEach(row=>{
+    const tags = row.getAttribute('data-tags') || '';
+    const show = cat==='all' || tags.includes(cat);
+    row.style.display = show ? '' : 'none';
+    if(show) count++;
+  });
+  const rc=document.getElementById('rcount');
+  if(rc) rc.textContent=count+' results found';
+}
+
+// ── SLOT CHIP (single select in same container) ──────
+function scSel(el){
+  if(el.classList.contains('taken')) return;
+  const p=el.parentElement;
+  p.querySelectorAll('.sc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ── DATE PILL ────────────────────────────────────────
+function dSel(el){
+  const p=el.parentElement;
+  p.querySelectorAll('.dpill').forEach(d=>d.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── PAYMENT METHOD ───────────────────────────────────
+function pSel(el){
+  document.querySelectorAll('.pmethod').forEach(m=>{
+    m.classList.remove('on');
+    m.querySelector('.radio')?.classList.remove('on');
+  });
+  el.classList.add('on');
+  el.querySelector('.radio')?.classList.add('on');
+}
+
+// ── TOGGLES ──────────────────────────────────────────
+function togSel(id){
+  const t=document.getElementById(id);
+  t.classList.toggle('on');
+}
+
+// ── FILTER SHEET ─────────────────────────────────────
+function openSheet(){document.getElementById('fov').classList.add('open');}
+function closeSheet(){
+  document.getElementById('fov').classList.remove('open');
+  updateCount();
+}
+function resetF(){
+  const ps=document.getElementById('pslider');
+  const ds=document.getElementById('dslider');
+  if(ps){ps.value=500;syncP(500);}
+  if(ds){ds.value=10;document.getElementById('dv').textContent='5 km';}
+  document.querySelectorAll('.fsheet .chip').forEach(c=>c.classList.remove('on'));
+}
+function syncP(v){
+  const ps=document.getElementById('pslider');
+  const pv=document.getElementById('pv');
+  if(ps) ps.value=v;
+  if(pv) pv.textContent='₹'+v;
+  ['200','300','500','Any'].forEach(k=>{
+    const el=document.getElementById('pc'+(k==='Any'?'Any':k));
+    if(!el) return;
+    const active=(k==='Any'&&v>=2000)||(k!=='Any'&&+k===v);
+    el.style.borderColor=active?'var(--p)':'var(--border)';
+    el.style.background=active?'var(--pl)':'var(--bg)';
+    el.style.color=active?'var(--p)':'var(--tm)';
+  });
+  updateCount();
+}
+function updateCount(){
+  const v=+(document.getElementById('pslider')?.value||500);
+  const c=v>=500?6:v>=300?4:v>=200?2:1;
+  const rc=document.getElementById('rcount');
+  if(rc) rc.textContent=c+' results found';
+  const ab=document.getElementById('applyBtn');
+  if(ab) ab.textContent='Apply Filters · '+c+' Results';
+}
+
+// ── ACCEPT/DECLINE ────────────────────────────────────
+function acceptReq(btn){
+  const row=btn.closest('#pendRow,#trainReq,[class*="card"]');
+  if(!row) return;
+  const isAccept=btn.textContent.includes('Accept');
+  row.style.transition='opacity .3s';row.style.opacity='0';
+  setTimeout(()=>{row.style.display='none';toast(isAccept?'Request accepted ✓':'Request declined');},300);
+}
+
+// ── WISHLIST ──────────────────────────────────────────
+function toggleHeart(){
+  const b=document.getElementById('heartBtn');
+  const saved=b.dataset.saved==='1';
+  b.dataset.saved=saved?'0':'1';
+  b.textContent=saved?'🤍':'❤️';
+  toast(saved?'Removed from saved':'Saved ❤️');
+}
+
+// ── CHAT ──────────────────────────────────────────────
+function sendMsg(){
+  const inp=document.getElementById('cinput');
+  const txt=inp.innerText.trim();
+  if(!txt||txt==='Type a message…') return;
+  addBubble(txt,'out');
+  inp.innerText='';
+  document.getElementById('qreplies')?.remove();
+  setTimeout(()=>addBubble(autoReply(txt),'in'),800);
+}
+function sendQR(btn){
+  addBubble(btn.textContent.trim(),'out');
+  btn.closest('#qreplies')?.remove();
+  setTimeout(()=>addBubble(autoReply(btn.textContent),'in'),800);
+}
+function addBubble(txt,dir){
+  const m=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className=dir==='in'?'bin':'bout';
+  const now=new Date();
+  const t=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+(dir==='out'?' ✓✓':'');
+  d.innerHTML=dir==='in'
+    ?`<div class="av" style="background:#059669;width:26px;height:26px;font-size:9px;flex-shrink:0">SK</div><div class="bbody"><div class="btext">${esc(txt)}</div><div class="btime">${t}</div></div>`
+    :`<div class="bbody"><div class="btext">${esc(txt)}</div><div class="btime">${t}</div></div>`;
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function autoReply(t){
+  const l=t.toLowerCase();
+  if(l.includes('gear')||l.includes('bring')) return 'Just bring your bat and sports shoes. Shuttles provided 🏸';
+  if(l.includes('parking')) return 'Yes! Free parking right next to the ground 🚗';
+  if(l.includes('time')||l.includes('arrive')) return 'Please arrive by 8:45 AM for warm-up ⏰';
+  if(l.includes('got it')||l.includes('ok')||l.includes('👍')) return 'See you Sunday! 🎉';
+  return 'Sure! Any other questions? 😊';
+}
+
+// ── STAR RATING ───────────────────────────────────────
+function rateStar(v){
+  document.querySelectorAll('#stars .star').forEach((s,i)=>{
+    s.style.color=i<v?'var(--a)':'var(--tl)';
+  });
+}
+
+// ── CHAT INPUT FOCUS ──────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  const ci=document.getElementById('cinput');
+  if(ci){
+    ci.addEventListener('focus',()=>{if(ci.innerText==='Type a message…')ci.innerText='';});
+    ci.addEventListener('blur',()=>{if(!ci.innerText.trim())ci.innerText='Type a message…';});
+    ci.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  }
+});
+</script>
+</body>
+</html>
