@@ -279,7 +279,7 @@ These are the natural next integration points for a real build.
 ## ◈ Credits
 
 ```
-  Designed & Built by   →  Akash
+  Designed & Built by   →  Bhargavi N
   Version               →  3.0
   Architecture          →  Vanilla HTML · CSS · JavaScript
   Fonts                 →  Syne + DM Sans (Google Fonts)
